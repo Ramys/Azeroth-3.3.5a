@@ -1,54 +1,46 @@
+#pragma once
+
 /*
- * This file is part of the AzerothCore Project. See AUTHORS file for Copyright information
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Affero General Public License as published by the
- * Free Software Foundation; either version 3 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+ src\server\game\Motd\MotdMgr.h
+*/
 
-#ifndef _MOTDMGR_H_
-#define _MOTDMGR_H_
-
-#include "Define.h"
 #include <string>
-#include "Common.h"
 
-class WorldPacket;
-
-class AC_GAME_API MotdMgr
+/// MotdMgr
+/// Agora o MOTD é opcional (pode estar vazio) e totalmente editável.
+/// O conteúdo é carregado/salvo em data/motd.txt por simplicidade.
+class MotdMgr
 {
 public:
-    static MotdMgr* instance();
+    // Singleton accessor
+    static MotdMgr &Instance();
 
-    /// Set a new Message of the Day
-    void SetMotd(std::string motd, LocaleConstant locale);
+    // Carrega o MOTD do arquivo (retorna true se o arquivo foi lido, false se não existia)
+    bool Load();
 
-    /// Load Message of the Day
-    void LoadMotd();
+    // Salva o MOTD para o arquivo
+    bool Save() const;
 
-    /// Get the current Message of the Day
-    char const* GetMotd(LocaleConstant locale);
+    // Define novo MOTD (pode ser string vazia para remover o MOTD)
+    void SetMotd(const std::string &newMotd);
 
-    /// Returns the current motd packet for the given locale
-    WorldPacket const* GetMotdPacket(LocaleConstant locale);
+    // Retorna o MOTD atualmente em memória
+    const std::string &GetMotd() const noexcept;
+
+    // Limpa (remove) o MOTD atual
+    void Clear() noexcept;
 
 private:
-    // Loads all available localized motd for the realm
-    void LoadMotdLocale();
+    MotdMgr();
+    ~MotdMgr() = default;
 
-    // Create a worldpacket for a given motd localization
-    WorldPacket CreateWorldPacket(std::string motd);
+    // Path do arquivo onde o MOTD é salvo/ carregado
+    const std::string m_filePath = "data/motd.txt";
+
+    // Conteúdo atual do MOTD (pode ser vazio)
+    std::string m_motd;
+
+    // Não copiável
+    MotdMgr(const MotdMgr &) = delete;
+    MotdMgr &operator=(const MotdMgr &) = delete;
 };
-
-#define sMotdMgr MotdMgr::instance()
-
-#endif // _MOTDMGR_H_
